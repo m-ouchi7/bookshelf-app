@@ -29,3 +29,16 @@ export interface Book {
  * 新規登録用の入力データ型（id, createdAt, updatedAt は自動生成のため除外）
  */
 export type CreateBookInput = Omit<Book, "id" | "createdAt" | "updatedAt">;
+
+/**
+ * 本の追加・編集フォームで扱う入力値
+ */
+export type BookFormState = {
+  title: string;
+  author: string;
+  publisher: string;
+  status: ReadingStatus;
+  evaluation: string;
+  finishedAt: string;
+  note: string;
+};

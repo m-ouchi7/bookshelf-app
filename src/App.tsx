@@ -1,10 +1,9 @@
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import AddBookForm from "./components/AddBookForm";
 import BookCard from "./components/BookCard";
 import BookFilter from "./components/BookFilter";
-import BookDetailPage from "./pages/BookDetailPage";
-import EditBookPage from "./pages/EditBookPage";
 import { useBooks } from "./hooks/useBooks";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import BookDetailPage from "./pages/BookDetailPage";
 import "./App.css";
 
 type HomePageProps = Pick<
@@ -97,12 +96,8 @@ function App() {
         />
         <Route
           path="/books/:id"
-          element={<BookDetailPage getBookById={getBookById} />}
-        />
-        <Route
-          path="/books/:id/edit"
           element={
-            <EditBookPage getBookById={getBookById} updateBook={updateBook} />
+            <BookDetailPage getBookById={getBookById} updateBook={updateBook} />
           }
         />
       </Routes>

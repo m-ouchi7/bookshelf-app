@@ -322,6 +322,48 @@ select:focus {
   white-space: pre-wrap;
 }
 
+.book-detail__note {
+  min-height: 9rem;
+}
+
+.book-detail__note textarea {
+  width: 100%;
+  min-height: 9rem;
+  resize: vertical;
+}
+
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  color: #c47a32;
+  white-space: nowrap;
+}
+
+.star-rating__star {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+button.star-rating__star {
+  cursor: pointer;
+}
+
+button.star-rating__star:hover,
+button.star-rating__star:focus-visible {
+  color: #9f6045;
+}
+
+button.star-rating__star:focus-visible {
+  outline: 2px solid #b97756;
+  outline-offset: 2px;
+}
+
 .edit-book-form__fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

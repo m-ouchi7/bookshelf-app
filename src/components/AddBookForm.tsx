@@ -1,25 +1,15 @@
 import { useState, type FormEvent } from "react";
 import {
   readingStatusLabels,
+  type BookFormState,
   type CreateBookInput,
-  type ReadingStatus,
 } from "../types/book";
 
 type AddBookFormProps = {
   onAddBook: (input: CreateBookInput) => void;
 };
 
-type FormState = {
-  title: string;
-  author: string;
-  publisher: string;
-  status: ReadingStatus;
-  evaluation: string;
-  finishedAt: string;
-  note: string;
-};
-
-const initialFormState: FormState = {
+const initialFormState: BookFormState = {
   title: "",
   author: "",
   publisher: "",
@@ -30,7 +20,7 @@ const initialFormState: FormState = {
 };
 
 function AddBookForm({ onAddBook }: AddBookFormProps) {
-  const [formState, setFormState] = useState<FormState>(initialFormState);
+  const [formState, setFormState] = useState<BookFormState>(initialFormState);
   const [isOpen, setIsOpen] = useState(false);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -132,7 +122,7 @@ function AddBookForm({ onAddBook }: AddBookFormProps) {
                 onChange={(event) =>
                   setFormState((current) => ({
                     ...current,
-                    status: event.target.value as ReadingStatus,
+                    status: event.target.value as BookFormState["status"],
                   }))
                 }
                 required
@@ -192,7 +182,7 @@ function AddBookForm({ onAddBook }: AddBookFormProps) {
                     note: event.target.value,
                   }))
                 }
-                rows={3}
+                rows={6}
               />
             </div>
           </div>
