@@ -27,6 +27,76 @@
   color: #766b65;
 }
 
+.add-book-form-container {
+  margin-bottom: 24px;
+}
+
+.add-book-toggle {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid #9f6045;
+  border-radius: 5px;
+  color: #ffffff;
+  background: #9f6045;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.add-book-toggle:hover {
+  background: #824b37;
+}
+
+.add-book-form {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+  padding: 20px;
+  border: 1px solid #e4dcd5;
+  border-radius: 8px;
+  background: #fffdfb;
+}
+
+.add-book-form__fields {
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.add-book-form__field {
+  display: grid;
+  gap: 8px;
+  color: #5d5048;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.add-book-form__field--wide {
+  grid-column: 1 / -1;
+}
+
+.add-book-form textarea {
+  resize: vertical;
+}
+
+.add-book-form__submit {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 1px solid #9f6045;
+  border-radius: 5px;
+  color: #ffffff;
+  background: #9f6045;
+  cursor: pointer;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.add-book-form__submit:hover {
+  background: #824b37;
+}
+
 .book-filter {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 220px;
@@ -163,5 +233,18 @@ select:focus {
 
   .book-filter {
     grid-template-columns: 1fr;
+  }
+
+  .add-book-form {
+    display: grid;
+    align-items: stretch;
+  }
+
+  .add-book-form__fields {
+    grid-template-columns: 1fr;
+  }
+
+  .add-book-form__field--wide {
+    grid-column: auto;
   }
 }

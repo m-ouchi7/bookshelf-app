@@ -1,3 +1,4 @@
+import AddBookForm from "./components/AddBookForm";
 import BookCard from "./components/BookCard";
 import BookFilter from "./components/BookFilter";
 import { useBooks } from "./hooks/useBooks";
@@ -10,6 +11,7 @@ function App() {
     setFilterStatus,
     searchQuery,
     setSearchQuery,
+    addBook,
     updateBookStatus,
     deleteBook,
   } = useBooks();
@@ -21,6 +23,8 @@ function App() {
         <h1>読書管理</h1>
         <p>読みたい本と読んだ本を、シンプルに管理できます。</p>
       </header>
+
+      <AddBookForm onAddBook={addBook} />
 
       <BookFilter
         searchQuery={searchQuery}
