@@ -1,5 +1,9 @@
 import { useState, type FormEvent } from "react";
-import type { CreateBookInput, ReadingStatus } from "../types/book";
+import {
+  readingStatusLabels,
+  type CreateBookInput,
+  type ReadingStatus,
+} from "../types/book";
 
 type AddBookFormProps = {
   onAddBook: (input: CreateBookInput) => void;
@@ -133,9 +137,11 @@ function AddBookForm({ onAddBook }: AddBookFormProps) {
                 }
                 required
               >
-                <option value="unread">未読</option>
-                <option value="reading">読中</option>
-                <option value="completed">読了</option>
+                {Object.entries(readingStatusLabels).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="add-book-form__field">

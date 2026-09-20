@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { BookFilterStatus } from "../hooks/useBooks";
+import { readingStatusLabels } from "../types/book";
 
 type BookFilterProps = {
   searchQuery: string;
@@ -34,9 +35,11 @@ function BookFilter({
           }
         >
           <option value="all">すべて</option>
-          <option value="unread">未読</option>
-          <option value="reading">読中</option>
-          <option value="completed">読了</option>
+          {Object.entries(readingStatusLabels).map(([value, label]) => (
+            <option key={value} value={value}>
+              {label}
+            </option>
+          ))}
         </select>
       </label>
     </section>

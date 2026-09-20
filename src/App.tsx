@@ -1,21 +1,34 @@
 import AddBookForm from "./components/AddBookForm";
 import BookCard from "./components/BookCard";
 import BookFilter from "./components/BookFilter";
+import BookDetailPage from "./pages/BookDetailPage";
+import EditBookPage from "./pages/EditBookPage";
 import { useBooks } from "./hooks/useBooks";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import "./App.css";
 
-function App() {
-  const {
-    filteredBooks,
-    filterStatus,
-    setFilterStatus,
-    searchQuery,
-    setSearchQuery,
-    addBook,
-    updateBookStatus,
-    deleteBook,
-  } = useBooks();
+type HomePageProps = Pick<
+  ReturnType<typeof useBooks>,
+  | "filteredBooks"
+  | "filterStatus"
+  | "setFilterStatus"
+  | "searchQuery"
+  | "setSearchQuery"
+  | "addBook"
+  | "updateBookStatus"
+  | "deleteBook"
+>;
 
+function HomePage({
+  filteredBooks,
+  filterStatus,
+  setFilterStatus,
+  searchQuery,
+  setSearchQuery,
+  addBook,
+  updateBookStatus,
+  deleteBook,
+}: HomePageProps) {
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -25,7 +38,6 @@ function App() {
       </header>
 
       <AddBookForm onAddBook={addBook} />
-
       <BookFilter
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -48,6 +60,53 @@ function App() {
         )}
       </section>
     </main>
+  );
+}
+
+function App() {
+  const {
+    filteredBooks,
+    filterStatus,
+    setFilterStatus,
+    searchQuery,
+    setSearchQuery,
+    addBook,
+    updateBookStatus,
+    deleteBook,
+    getBookById,
+    updateBook,
+  } = useBooks();
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <HomePage
+              filteredBooks={filteredBooks}
+              filterStatus={filterStatus}
+              setFilterStatus={setFilterStatus}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              addBook={addBook}
+              updateBookStatus={updateBookStatus}
+              deleteBook={deleteBook}
+            />
+          }
+        />
+        <Route
+          path="/books/:id"
+          element={<BookDetailPage getBookById={getBookById} />}
+        />
+        <Route
+          path="/books/:id/edit"
+          element={
+            <EditBookPage getBookById={getBookById} updateBook={updateBook} />
+          }
+        />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

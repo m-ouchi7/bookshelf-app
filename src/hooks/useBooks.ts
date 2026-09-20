@@ -33,6 +33,17 @@ export function useBooks() {
     setBooks((currentBooks) => [...currentBooks, book]);
   };
 
+  const getBookById = (id: string) => books.find((book) => book.id === id);
+
+  const updateBook = (id: string, input: Partial<CreateBookInput>) => {
+    const updatedAt = new Date().toISOString();
+    setBooks((currentBooks) =>
+      currentBooks.map((book) =>
+        book.id === id ? { ...book, ...input, updatedAt } : book
+      )
+    );
+  };
+
   const updateBookStatus = (id: string, status: ReadingStatus) => {
     const updatedAt = new Date().toISOString();
     setBooks((currentBooks) =>
@@ -54,6 +65,8 @@ export function useBooks() {
     searchQuery,
     setSearchQuery,
     addBook,
+    getBookById,
+    updateBook,
     updateBookStatus,
     deleteBook,
   };

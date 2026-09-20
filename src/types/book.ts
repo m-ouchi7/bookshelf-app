@@ -3,6 +3,12 @@
  */
 export type ReadingStatus = "unread" | "reading" | "completed";
 
+export const readingStatusLabels: Record<ReadingStatus, string> = {
+  unread: "未読",
+  reading: "読中",
+  completed: "読了",
+};
+
 /**
  * 本のドメインモデル
  */
