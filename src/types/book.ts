@@ -9,6 +9,16 @@ export const readingStatusLabels: Record<ReadingStatus, string> = {
   completed: "読了",
 };
 
+export const bookFieldLabels = {
+  title: "タイトル",
+  author: "著者",
+  publisher: "出版社",
+  status: "ステータス",
+  evaluation: "評価",
+  finishedAt: "読了日",
+  note: "メモ",
+} as const;
+
 /**
  * 本のドメインモデル
  */

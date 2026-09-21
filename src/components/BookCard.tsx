@@ -1,22 +1,12 @@
-import type { ChangeEvent } from "react";
 import { Link } from "react-router-dom";
-import {
-  readingStatusLabels,
-  type Book,
-  type ReadingStatus,
-} from "../types/book";
+import { bookFieldLabels, readingStatusLabels, type Book } from "../types/book";
+import { formatDate } from "../utils/dateFormat";
 
 type BookCardProps = {
   book: Book;
-  onStatusChange: (id: string, status: ReadingStatus) => void;
-  onDelete: (id: string) => void;
 };
 
-function BookCard({ book, onStatusChange, onDelete }: BookCardProps) {
-  const handleStatusChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    onStatusChange(book.id, event.target.value as ReadingStatus);
-  };
-
+function BookCard({ book }: BookCardProps) {
   return (
     <article className="book-card">
       <div className="book-card__header">
@@ -30,26 +20,19 @@ function BookCard({ book, onStatusChange, onDelete }: BookCardProps) {
             </Link>
           </h2>
         </div>
-        <button
-          type="button"
-          className="delete-button"
-          onClick={() => onDelete(book.id)}
-        >
-          削除
-        </button>
       </div>
 
       <dl className="book-card__details">
         <div>
-          <dt>著者</dt>
+          <dt>{bookFieldLabels.author}</dt>
           <dd>{book.author}</dd>
         </div>
         <div>
-          <dt>出版社</dt>
+          <dt>{bookFieldLabels.publisher}</dt>
           <dd>{book.publisher ?? "未登録"}</dd>
         </div>
         <div>
-          <dt>評価</dt>
+          <dt>{bookFieldLabels.evaluation}</dt>
           <dd>
             {book.evaluation
               ? `${"★".repeat(book.evaluation)}${"☆".repeat(
@@ -59,21 +42,10 @@ function BookCard({ book, onStatusChange, onDelete }: BookCardProps) {
           </dd>
         </div>
         <div>
-          <dt>読了日</dt>
-          <dd>{book.finishedAt ?? "未読了"}</dd>
+          <dt>{bookFieldLabels.finishedAt}</dt>
+          <dd>{book.finishedAt ? formatDate(book.finishedAt) : "未読了"}</dd>
         </div>
       </dl>
-
-      <label className="book-card__status-control">
-        ステータス
-        <select value={book.status} onChange={handleStatusChange}>
-          {Object.entries(readingStatusLabels).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </label>
     </article>
   );
 }

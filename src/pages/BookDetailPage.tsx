@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from "react";
-import { Link, useParams } from "react-router-dom";
-import StarRating from "../components/StarRating";
+import { useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import AddBookForm from "../components/AddBookForm";
+import { formatDate, formatDateTime } from "../utils/dateFormat";
 import {
+  bookFieldLabels,
   readingStatusLabels,
   type Book,
   type BookFormState,
@@ -11,6 +13,7 @@ import {
 type BookDetailPageProps = {
   getBookById: (id: string) => Book | undefined;
   updateBook: (id: string, input: Partial<CreateBookInput>) => void;
+  deleteBook: (id: string) => void;
 };
 
 function toFormState(book: Book): BookFormState {
@@ -25,15 +28,17 @@ function toFormState(book: Book): BookFormState {
   };
 }
 
-function BookDetailPage({ getBookById, updateBook }: BookDetailPageProps) {
+function BookDetailPage({
+  getBookById,
+  updateBook,
+  deleteBook,
+}: BookDetailPageProps) {
   const { id } = useParams();
+  const navigate = useNavigate();
   const book = id ? getBookById(id) : undefined;
   const [isEditing, setIsEditing] = useState(false);
-  const [formState, setFormState] = useState<BookFormState | null>(
-    book ? toFormState(book) : null
-  );
 
-  if (!id || !book || !formState) {
+  if (!id || !book) {
     return (
       <main className="page-shell">
         <p className="empty-state">該当する本が見つかりません。</p>
@@ -44,45 +49,16 @@ function BookDetailPage({ getBookById, updateBook }: BookDetailPageProps) {
     );
   }
 
-  const updateField = <K extends keyof BookFormState>(
-    field: K,
-    value: BookFormState[K]
-  ) => {
-    setFormState((current) =>
-      current ? { ...current, [field]: value } : current
-    );
-  };
-
-  const startEditing = () => {
-    setFormState(toFormState(book));
-    setIsEditing(true);
-  };
-
-  const cancelEditing = () => {
-    setFormState(toFormState(book));
+  const handleUpdateBook = (input: CreateBookInput) => {
+    updateBook(id, input);
     setIsEditing(false);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const title = formState.title.trim();
-    const author = formState.author.trim();
-    if (!title || !author) {
-      return;
+  const handleDelete = () => {
+    if (window.confirm("本当に削除しますか？")) {
+      deleteBook(id);
+      navigate("/");
     }
-
-    updateBook(id, {
-      title,
-      author,
-      publisher: formState.publisher.trim() || undefined,
-      status: formState.status,
-      evaluation: formState.evaluation
-        ? Number(formState.evaluation)
-        : undefined,
-      finishedAt: formState.finishedAt || undefined,
-      note: formState.note.trim() || undefined,
-    });
-    setIsEditing(false);
   };
 
   return (
@@ -91,186 +67,90 @@ function BookDetailPage({ getBookById, updateBook }: BookDetailPageProps) {
         <Link className="secondary-button" to="/">
           ← 一覧へ戻る
         </Link>
-        {isEditing ? (
-          <div className="page-actions__group">
+        <div className="page-actions__group">
+          {isEditing ? (
             <button
               className="secondary-button"
               type="button"
-              onClick={cancelEditing}
+              onClick={() => setIsEditing(false)}
             >
               キャンセル
             </button>
-            <button
-              className="primary-button"
-              type="submit"
-              form="book-detail-form"
-            >
-              保存
-            </button>
-          </div>
-        ) : (
-          <button
-            className="primary-button"
-            type="button"
-            onClick={startEditing}
-          >
-            編集
-          </button>
-        )}
+          ) : (
+            <>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => setIsEditing(true)}
+              >
+                編集
+              </button>
+              <button
+                className="delete-button"
+                type="button"
+                onClick={handleDelete}
+              >
+                削除
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
-      <form
-        id="book-detail-form"
-        className="book-detail"
-        onSubmit={handleSubmit}
-      >
-        <p className="book-card__status">
-          {readingStatusLabels[isEditing ? formState.status : book.status]}
-        </p>
-        <div className="book-detail__title-row">
-          <h1>
-            {isEditing ? (
-              <input
-                id="detail-title"
-                aria-label="タイトル"
-                type="text"
-                value={formState.title}
-                required
-                onChange={(event) => updateField("title", event.target.value)}
-              />
-            ) : (
-              book.title
-            )}
-          </h1>
-        </div>
-        <dl className="book-detail__details">
-          <div>
-            <dt>著者</dt>
-            <dd>
-              {isEditing ? (
-                <input
-                  id="detail-author"
-                  aria-label="著者"
-                  type="text"
-                  value={formState.author}
-                  required
-                  onChange={(event) =>
-                    updateField("author", event.target.value)
-                  }
-                />
-              ) : (
-                book.author
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>出版社</dt>
-            <dd>
-              {isEditing ? (
-                <input
-                  id="detail-publisher"
-                  aria-label="出版社"
-                  type="text"
-                  value={formState.publisher}
-                  onChange={(event) =>
-                    updateField("publisher", event.target.value)
-                  }
-                />
-              ) : (
-                book.publisher ?? "未登録"
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>読書ステータス</dt>
-            <dd>
-              {isEditing ? (
-                <select
-                  id="detail-status"
-                  aria-label="読書ステータス"
-                  value={formState.status}
-                  required
-                  onChange={(event) =>
-                    updateField(
-                      "status",
-                      event.target.value as BookFormState["status"]
-                    )
-                  }
-                >
-                  {Object.entries(readingStatusLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                readingStatusLabels[book.status]
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>評価</dt>
-            <dd>
-              {isEditing ? (
-                <StarRating
-                  value={
-                    formState.evaluation
-                      ? Number(formState.evaluation)
-                      : undefined
-                  }
-                  onChange={(value) =>
-                    updateField("evaluation", value?.toString() ?? "")
-                  }
-                />
-              ) : (
-                <StarRating value={book.evaluation} />
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>読了日</dt>
-            <dd>
-              {isEditing ? (
-                <input
-                  id="detail-finished-at"
-                  aria-label="読了日"
-                  type="date"
-                  value={formState.finishedAt}
-                  onChange={(event) =>
-                    updateField("finishedAt", event.target.value)
-                  }
-                />
-              ) : (
-                book.finishedAt ?? "未登録"
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>メモ</dt>
-            <dd className="book-detail__note">
-              {isEditing ? (
-                <textarea
-                  id="detail-note"
-                  aria-label="メモ"
-                  rows={6}
-                  value={formState.note}
-                  onChange={(event) => updateField("note", event.target.value)}
-                />
-              ) : (
-                book.note ?? "未登録"
-              )}
-            </dd>
-          </div>
-          <div>
-            <dt>登録日時</dt>
-            <dd>{book.createdAt}</dd>
-          </div>
-          <div>
-            <dt>更新日時</dt>
-            <dd>{book.updatedAt}</dd>
-          </div>
-        </dl>
-      </form>
+      {isEditing ? (
+        <AddBookForm
+          initialValue={toFormState(book)}
+          onAddBook={handleUpdateBook}
+          submitLabel="保存"
+        />
+      ) : (
+        <article className="add-book-form-container book-detail">
+          <p className="book-card__status">
+            {readingStatusLabels[book.status]}
+          </p>
+          <h1>{book.title}</h1>
+          <dl className="book-detail__details">
+            <div>
+              <dt>{bookFieldLabels.author}</dt>
+              <dd>{book.author}</dd>
+            </div>
+            <div>
+              <dt>{bookFieldLabels.publisher}</dt>
+              <dd>{book.publisher ?? "未登録"}</dd>
+            </div>
+            <div>
+              <dt>{bookFieldLabels.status}</dt>
+              <dd>{readingStatusLabels[book.status]}</dd>
+            </div>
+            <div>
+              <dt>{bookFieldLabels.evaluation}</dt>
+              <dd>
+                {book.evaluation
+                  ? `${"★".repeat(book.evaluation)}${"☆".repeat(
+                      5 - book.evaluation
+                    )}`
+                  : "未評価"}
+              </dd>
+            </div>
+            <div>
+              <dt>{bookFieldLabels.finishedAt}</dt>
+              <dd>{formatDate(book.finishedAt)}</dd>
+            </div>
+            <div>
+              <dt>{bookFieldLabels.note}</dt>
+              <dd className="book-detail__note">{book.note ?? "未登録"}</dd>
+            </div>
+            <div>
+              <dt>登録日時</dt>
+              <dd>{formatDateTime(book.createdAt)}</dd>
+            </div>
+            <div>
+              <dt>更新日時</dt>
+              <dd>{formatDateTime(book.updatedAt)}</dd>
+            </div>
+          </dl>
+        </article>
+      )}
     </main>
   );
 }

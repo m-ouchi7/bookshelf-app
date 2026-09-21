@@ -1,9 +1,10 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
-import AddBookForm from "./components/AddBookForm";
+import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import BookCard from "./components/BookCard";
 import BookFilter from "./components/BookFilter";
 import { useBooks } from "./hooks/useBooks";
 import BookDetailPage from "./pages/BookDetailPage";
+import AddBookPage from "./pages/AddBookPage";
+import EditBookPage from "./pages/EditBookPage";
 import "./App.css";
 
 type HomePageProps = Pick<
@@ -13,9 +14,6 @@ type HomePageProps = Pick<
   | "setFilterStatus"
   | "searchQuery"
   | "setSearchQuery"
-  | "addBook"
-  | "updateBookStatus"
-  | "deleteBook"
 >;
 
 function HomePage({
@@ -24,9 +22,6 @@ function HomePage({
   setFilterStatus,
   searchQuery,
   setSearchQuery,
-  addBook,
-  updateBookStatus,
-  deleteBook,
 }: HomePageProps) {
   return (
     <main className="app-shell">
@@ -36,7 +31,9 @@ function HomePage({
         <p>読みたい本と読んだ本を、シンプルに管理できます。</p>
       </header>
 
-      <AddBookForm onAddBook={addBook} />
+      <Link className="primary-button add-book-link" to="/books/new">
+        + 本を追加
+      </Link>
       <BookFilter
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -46,14 +43,7 @@ function HomePage({
 
       <section className="book-list" aria-label="本の一覧">
         {filteredBooks.length > 0 ? (
-          filteredBooks.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onStatusChange={updateBookStatus}
-              onDelete={deleteBook}
-            />
-          ))
+          filteredBooks.map((book) => <BookCard key={book.id} book={book} />)
         ) : (
           <p className="empty-state">対象の本が見つかりません。</p>
         )}
@@ -70,7 +60,6 @@ function App() {
     searchQuery,
     setSearchQuery,
     addBook,
-    updateBookStatus,
     deleteBook,
     getBookById,
     updateBook,
@@ -88,16 +77,24 @@ function App() {
               setFilterStatus={setFilterStatus}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
-              addBook={addBook}
-              updateBookStatus={updateBookStatus}
+            />
+          }
+        />
+        <Route path="/books/new" element={<AddBookPage addBook={addBook} />} />
+        <Route
+          path="/books/:id"
+          element={
+            <BookDetailPage
+              getBookById={getBookById}
+              updateBook={updateBook}
               deleteBook={deleteBook}
             />
           }
         />
         <Route
-          path="/books/:id"
+          path="/books/:id/edit"
           element={
-            <BookDetailPage getBookById={getBookById} updateBook={updateBook} />
+            <EditBookPage getBookById={getBookById} updateBook={updateBook} />
           }
         />
       </Routes>
