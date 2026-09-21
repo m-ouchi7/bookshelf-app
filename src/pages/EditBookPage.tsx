@@ -4,7 +4,7 @@ import type { Book, BookFormState, CreateBookInput } from "../types/book";
 
 type EditBookPageProps = {
   getBookById: (id: string) => Book | undefined;
-  updateBook: (id: string, input: Partial<CreateBookInput>) => void;
+  updateBook: (id: string, input: Partial<CreateBookInput>) => Promise<void>;
 };
 
 function toFormState(book: Book): BookFormState {
@@ -35,8 +35,8 @@ function EditBookPage({ getBookById, updateBook }: EditBookPageProps) {
     );
   }
 
-  const handleUpdateBook = (input: CreateBookInput) => {
-    updateBook(id, input);
+  const handleUpdateBook = async (input: CreateBookInput) => {
+    await updateBook(id, input);
     navigate(`/books/${id}`);
   };
 

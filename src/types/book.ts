@@ -36,6 +36,22 @@ export interface Book {
 }
 
 /**
+ * Supabaseのbooksテーブルの行データ
+ */
+export type BookRow = {
+  id: string;
+  title: string;
+  author: string;
+  publisher: string | null;
+  status: ReadingStatus;
+  evaluation: number | null;
+  note: string | null;
+  finished_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * 新規登録用の入力データ型（id, createdAt, updatedAt は自動生成のため除外）
  */
 export type CreateBookInput = Omit<Book, "id" | "createdAt" | "updatedAt">;

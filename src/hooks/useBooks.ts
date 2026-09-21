@@ -1,13 +1,46 @@
-import { useState } from "react";
-import { initialBooks } from "../mocks/books";
-import type { Book, CreateBookInput, ReadingStatus } from "../types/book";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
+import type {
+  Book,
+  BookRow,
+  CreateBookInput,
+  ReadingStatus,
+} from "../types/book";
+import { toBook, toInsertPayload, toUpdatePayload } from "../utils/bookMapper";
+import { reportError } from "../utils/errorHandler";
 
 export type BookFilterStatus = ReadingStatus | "all";
 
 export function useBooks() {
-  const [books, setBooks] = useState<Book[]>(initialBooks);
+  const [books, setBooks] = useState<Book[]>([]);
   const [filterStatus, setFilterStatus] = useState<BookFilterStatus>("all");
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadBooks = async () => {
+      const { data, error } = await supabase
+        .from("books")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        reportError("本の取得に失敗しました。", error);
+        return;
+      }
+
+      if (isMounted) {
+        setBooks(((data ?? []) as BookRow[]).map(toBook));
+      }
+    };
+
+    void loadBooks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const filteredBooks = books.filter((book) => {
@@ -21,39 +54,54 @@ export function useBooks() {
     return matchesStatus && matchesQuery;
   });
 
-  const addBook = (input: CreateBookInput) => {
-    const now = new Date().toISOString();
-    const book: Book = {
-      ...input,
-      id: `book-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      createdAt: now,
-      updatedAt: now,
-    };
+  const addBook = async (input: CreateBookInput) => {
+    const { data, error } = await supabase
+      .from("books")
+      .insert(toInsertPayload(input))
+      .select()
+      .single();
 
-    setBooks((currentBooks) => [...currentBooks, book]);
+    if (error) {
+      reportError("本の追加に失敗しました。", error);
+      return;
+    }
+
+    setBooks((currentBooks) => [toBook(data as BookRow), ...currentBooks]);
   };
 
   const getBookById = (id: string) => books.find((book) => book.id === id);
 
-  const updateBook = (id: string, input: Partial<CreateBookInput>) => {
-    const updatedAt = new Date().toISOString();
+  const updateBook = async (id: string, input: Partial<CreateBookInput>) => {
+    const { data, error } = await supabase
+      .from("books")
+      .update(toUpdatePayload(input))
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      reportError("本の更新に失敗しました。", error);
+      return;
+    }
+
+    const updatedBook = toBook(data as BookRow);
     setBooks((currentBooks) =>
-      currentBooks.map((book) =>
-        book.id === id ? { ...book, ...input, updatedAt } : book
-      )
+      currentBooks.map((book) => (book.id === id ? updatedBook : book))
     );
   };
 
-  const updateBookStatus = (id: string, status: ReadingStatus) => {
-    const updatedAt = new Date().toISOString();
-    setBooks((currentBooks) =>
-      currentBooks.map((book) =>
-        book.id === id ? { ...book, status, updatedAt } : book
-      )
-    );
+  const updateBookStatus = async (id: string, status: ReadingStatus) => {
+    await updateBook(id, { status });
   };
 
-  const deleteBook = (id: string) => {
+  const deleteBook = async (id: string) => {
+    const { error } = await supabase.from("books").delete().eq("id", id);
+
+    if (error) {
+      reportError("本の削除に失敗しました。", error);
+      return;
+    }
+
     setBooks((currentBooks) => currentBooks.filter((book) => book.id !== id));
   };
 

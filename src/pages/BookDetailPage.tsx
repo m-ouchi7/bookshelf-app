@@ -12,8 +12,8 @@ import {
 
 type BookDetailPageProps = {
   getBookById: (id: string) => Book | undefined;
-  updateBook: (id: string, input: Partial<CreateBookInput>) => void;
-  deleteBook: (id: string) => void;
+  updateBook: (id: string, input: Partial<CreateBookInput>) => Promise<void>;
+  deleteBook: (id: string) => Promise<void>;
 };
 
 function toFormState(book: Book): BookFormState {
@@ -49,14 +49,14 @@ function BookDetailPage({
     );
   }
 
-  const handleUpdateBook = (input: CreateBookInput) => {
-    updateBook(id, input);
+  const handleUpdateBook = async (input: CreateBookInput) => {
+    await updateBook(id, input);
     setIsEditing(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm("本当に削除しますか？")) {
-      deleteBook(id);
+      await deleteBook(id);
       navigate("/");
     }
   };

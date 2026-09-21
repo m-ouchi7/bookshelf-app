@@ -43,7 +43,7 @@ function BookCard({ book }: BookCardProps) {
         </div>
         <div>
           <dt>{bookFieldLabels.finishedAt}</dt>
-          <dd>{book.finishedAt ? formatDate(book.finishedAt) : "未読了"}</dd>
+          <dd>{book.finishedAt ? formatDate(book.finishedAt) : "未登録"}</dd>
         </div>
       </dl>
     </article>
