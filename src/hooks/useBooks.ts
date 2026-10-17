@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
-import type {
-  Book,
-  BookRow,
-  CreateBookInput,
-  ReadingStatus,
+import type { Book, CreateBookInput, ReadingStatus } from "../types/book";
+import {
+  bookRowSchema,
+  createBookInputSchema,
+  updateBookInputSchema,
 } from "../types/book";
 import { toBook, toInsertPayload, toUpdatePayload } from "../utils/bookMapper";
 import { reportError } from "../utils/errorHandler";
@@ -30,8 +30,17 @@ export function useBooks() {
         return;
       }
 
+      const parsedRows = bookRowSchema.array().safeParse(data ?? []);
+      if (!parsedRows.success) {
+        reportError(
+          "取得した本のデータ形式が正しくありません。",
+          parsedRows.error,
+        );
+        return;
+      }
+
       if (isMounted) {
-        setBooks(((data ?? []) as BookRow[]).map(toBook));
+        setBooks(parsedRows.data.map(toBook));
       }
     };
 
@@ -55,9 +64,15 @@ export function useBooks() {
   });
 
   const addBook = async (input: CreateBookInput): Promise<boolean> => {
+    const parsedInput = createBookInputSchema.safeParse(input);
+    if (!parsedInput.success) {
+      reportError("本の入力内容を確認してください。", parsedInput.error);
+      return false;
+    }
+
     const { data, error } = await supabase
       .from("books")
-      .insert(toInsertPayload(input))
+      .insert(toInsertPayload(parsedInput.data))
       .select()
       .single();
 
@@ -66,7 +81,16 @@ export function useBooks() {
       return false;
     }
 
-    setBooks((currentBooks) => [toBook(data as BookRow), ...currentBooks]);
+    const parsedRow = bookRowSchema.safeParse(data);
+    if (!parsedRow.success) {
+      reportError(
+        "追加した本のデータ形式が正しくありません。",
+        parsedRow.error,
+      );
+      return false;
+    }
+
+    setBooks((currentBooks) => [toBook(parsedRow.data), ...currentBooks]);
     return true;
   };
 
@@ -76,9 +100,15 @@ export function useBooks() {
     id: string,
     input: Partial<CreateBookInput>,
   ): Promise<boolean> => {
+    const parsedInput = updateBookInputSchema.safeParse(input);
+    if (!parsedInput.success) {
+      reportError("本の入力内容を確認してください。", parsedInput.error);
+      return false;
+    }
+
     const { data, error } = await supabase
       .from("books")
-      .update(toUpdatePayload(input))
+      .update(toUpdatePayload(parsedInput.data))
       .eq("id", id)
       .select()
       .single();
@@ -88,7 +118,16 @@ export function useBooks() {
       return false;
     }
 
-    const updatedBook = toBook(data as BookRow);
+    const parsedRow = bookRowSchema.safeParse(data);
+    if (!parsedRow.success) {
+      reportError(
+        "更新した本のデータ形式が正しくありません。",
+        parsedRow.error,
+      );
+      return false;
+    }
+
+    const updatedBook = toBook(parsedRow.data);
     setBooks((currentBooks) =>
       currentBooks.map((book) => (book.id === id ? updatedBook : book)),
     );

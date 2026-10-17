@@ -1,6 +1,11 @@
 import { useState, type FormEvent } from "react";
 import BookFormFields from "./BookFormFields";
-import type { BookFormState, CreateBookInput } from "../types/book";
+import {
+  createBookInputSchema,
+  type BookFormState,
+  type CreateBookInput,
+} from "../types/book";
+import { reportError } from "../utils/errorHandler";
 
 type AddBookFormProps = {
   onAddBook: (input: CreateBookInput) => Promise<boolean>;
@@ -34,13 +39,10 @@ function AddBookForm({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const title = formState.title.trim();
-    const author = formState.author.trim();
-    if (!title || !author) return;
 
-    const succeeded = await onAddBook({
-      title,
-      author,
+    const parsedInput = createBookInputSchema.safeParse({
+      title: formState.title,
+      author: formState.author,
       publisher: formState.publisher.trim() || undefined,
       status: formState.status,
       evaluation: formState.evaluation
@@ -49,6 +51,12 @@ function AddBookForm({
       finishedAt: formState.finishedAt || undefined,
       note: formState.note.trim() || undefined,
     });
+    if (!parsedInput.success) {
+      reportError("本の入力内容を確認してください。", parsedInput.error);
+      return;
+    }
+
+    const succeeded = await onAddBook(parsedInput.data);
     if (succeeded) {
       setFormState(initialValue);
     }

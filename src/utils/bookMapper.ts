@@ -31,13 +31,13 @@ export function toInsertPayload(input: CreateBookInput) {
 export function toUpdatePayload(input: Partial<CreateBookInput>) {
   const payload: Record<string, unknown> = {};
 
-  if ("title" in input) payload.title = input.title;
-  if ("author" in input) payload.author = input.author;
-  if ("publisher" in input) payload.publisher = input.publisher ?? null;
-  if ("status" in input) payload.status = input.status;
-  if ("evaluation" in input) payload.evaluation = input.evaluation ?? null;
-  if ("note" in input) payload.note = input.note ?? null;
-  if ("finishedAt" in input) payload.finished_at = input.finishedAt ?? null;
+  if (input.title !== undefined) payload.title = input.title;
+  if (input.author !== undefined) payload.author = input.author;
+  if (input.publisher !== undefined) payload.publisher = input.publisher;
+  if (input.status !== undefined) payload.status = input.status;
+  if (input.evaluation !== undefined) payload.evaluation = input.evaluation;
+  if (input.note !== undefined) payload.note = input.note;
+  if (input.finishedAt !== undefined) payload.finished_at = input.finishedAt;
 
   return payload;
 }
