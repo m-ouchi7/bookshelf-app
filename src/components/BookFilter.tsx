@@ -1,20 +1,31 @@
-import type { Dispatch, SetStateAction } from "react";
 import type { BookFilterStatus } from "../hooks/useBooks";
-import { readingStatusLabels } from "../types/book";
+import { readingStatusLabels, readingStatusSchema } from "../types/book";
 
 type BookFilterProps = {
   searchQuery: string;
-  setSearchQuery: Dispatch<SetStateAction<string>>;
+  onSearchQueryChange: (searchQuery: string) => void;
   filterStatus: BookFilterStatus;
-  setFilterStatus: Dispatch<SetStateAction<BookFilterStatus>>;
+  onFilterStatusChange: (filterStatus: BookFilterStatus) => void;
 };
 
 function BookFilter({
   searchQuery,
-  setSearchQuery,
+  onSearchQueryChange,
   filterStatus,
-  setFilterStatus,
+  onFilterStatusChange,
 }: BookFilterProps) {
+  const handleFilterStatusChange = (value: string) => {
+    if (value === "all") {
+      onFilterStatusChange("all");
+      return;
+    }
+
+    const parsedStatus = readingStatusSchema.safeParse(value);
+    if (parsedStatus.success) {
+      onFilterStatusChange(parsedStatus.data);
+    }
+  };
+
   return (
     <section className="book-filter" aria-label="本の絞り込み">
       <label>
@@ -22,7 +33,7 @@ function BookFilter({
         <input
           type="search"
           value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
+          onChange={(event) => onSearchQueryChange(event.target.value)}
           placeholder="タイトルまたは著者名"
         />
       </label>
@@ -30,9 +41,7 @@ function BookFilter({
         ステータス
         <select
           value={filterStatus}
-          onChange={(event) =>
-            setFilterStatus(event.target.value as BookFilterStatus)
-          }
+          onChange={(event) => handleFilterStatusChange(event.target.value)}
         >
           <option value="all">すべて</option>
           {Object.entries(readingStatusLabels).map(([value, label]) => (

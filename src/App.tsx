@@ -19,7 +19,6 @@ type HomePageProps = Pick<
   | "isLoading"
   | "isFetching"
   | "isError"
-  | "error"
   | "retry"
 >;
 
@@ -33,9 +32,15 @@ function HomePage({
   isLoading,
   isFetching,
   isError,
-  error,
   retry,
 }: HomePageProps) {
+  const handleSearchQueryChange = (nextSearchQuery: string) => {
+    setSearchQuery(nextSearchQuery);
+  };
+  const handleFilterStatusChange = (nextFilterStatus: typeof filterStatus) => {
+    setFilterStatus(nextFilterStatus);
+  };
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -49,9 +54,9 @@ function HomePage({
       </Link>
       <BookFilter
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
         filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
+        onFilterStatusChange={handleFilterStatusChange}
       />
 
       <section className="book-list" aria-label="本の一覧">
@@ -62,7 +67,6 @@ function HomePage({
         ) : isError ? (
           <div className="empty-state query-error" role="alert">
             <p>本の一覧を読み込めませんでした。</p>
-            {error instanceof Error && <p>{error.message}</p>}
             {isFetching && <p role="status">再試行しています...</p>}
             <button
               className="secondary-button"
@@ -105,7 +109,6 @@ function App() {
     isLoading,
     isFetching,
     isError,
-    error,
     retry,
     notification,
     clearNotification,
@@ -149,7 +152,6 @@ function App() {
               isLoading={isLoading}
               isFetching={isFetching}
               isError={isError}
-              error={error}
               retry={retry}
             />
           }
