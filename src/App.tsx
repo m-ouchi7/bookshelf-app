@@ -36,6 +36,13 @@ function HomePage({
   error,
   retry,
 }: HomePageProps) {
+  const handleSearchQueryChange = (nextSearchQuery: string) => {
+    setSearchQuery(nextSearchQuery);
+  };
+  const handleFilterStatusChange = (nextFilterStatus: typeof filterStatus) => {
+    setFilterStatus(nextFilterStatus);
+  };
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -49,9 +56,9 @@ function HomePage({
       </Link>
       <BookFilter
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        onSearchQueryChange={handleSearchQueryChange}
         filterStatus={filterStatus}
-        setFilterStatus={setFilterStatus}
+        onFilterStatusChange={handleFilterStatusChange}
       />
 
       <section className="book-list" aria-label="本の一覧">
