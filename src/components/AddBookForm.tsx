@@ -3,7 +3,7 @@ import BookFormFields from "./BookFormFields";
 import type { BookFormState, CreateBookInput } from "../types/book";
 
 type AddBookFormProps = {
-  onAddBook: (input: CreateBookInput) => void | Promise<void>;
+  onAddBook: (input: CreateBookInput) => Promise<boolean>;
   initialValue?: BookFormState;
   submitLabel?: string;
 };
@@ -27,7 +27,7 @@ function AddBookForm({
 
   const updateField = <K extends keyof BookFormState>(
     field: K,
-    value: BookFormState[K]
+    value: BookFormState[K],
   ) => {
     setFormState((current) => ({ ...current, [field]: value }));
   };
@@ -38,7 +38,7 @@ function AddBookForm({
     const author = formState.author.trim();
     if (!title || !author) return;
 
-    await onAddBook({
+    const succeeded = await onAddBook({
       title,
       author,
       publisher: formState.publisher.trim() || undefined,
@@ -49,7 +49,9 @@ function AddBookForm({
       finishedAt: formState.finishedAt || undefined,
       note: formState.note.trim() || undefined,
     });
-    setFormState(initialValue);
+    if (succeeded) {
+      setFormState(initialValue);
+    }
   };
 
   return (

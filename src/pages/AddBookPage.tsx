@@ -3,15 +3,18 @@ import AddBookForm from "../components/AddBookForm";
 import type { CreateBookInput } from "../types/book";
 
 type AddBookPageProps = {
-  addBook: (input: CreateBookInput) => Promise<void>;
+  addBook: (input: CreateBookInput) => Promise<boolean>;
 };
 
 function AddBookPage({ addBook }: AddBookPageProps) {
   const navigate = useNavigate();
 
   const handleAddBook = async (input: CreateBookInput) => {
-    await addBook(input);
+    const succeeded = await addBook(input);
+    if (!succeeded) return false;
+
     navigate("/");
+    return true;
   };
 
   return (

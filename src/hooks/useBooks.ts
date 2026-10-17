@@ -54,7 +54,7 @@ export function useBooks() {
     return matchesStatus && matchesQuery;
   });
 
-  const addBook = async (input: CreateBookInput) => {
+  const addBook = async (input: CreateBookInput): Promise<boolean> => {
     const { data, error } = await supabase
       .from("books")
       .insert(toInsertPayload(input))
@@ -63,15 +63,19 @@ export function useBooks() {
 
     if (error) {
       reportError("本の追加に失敗しました。", error);
-      return;
+      return false;
     }
 
     setBooks((currentBooks) => [toBook(data as BookRow), ...currentBooks]);
+    return true;
   };
 
   const getBookById = (id: string) => books.find((book) => book.id === id);
 
-  const updateBook = async (id: string, input: Partial<CreateBookInput>) => {
+  const updateBook = async (
+    id: string,
+    input: Partial<CreateBookInput>,
+  ): Promise<boolean> => {
     const { data, error } = await supabase
       .from("books")
       .update(toUpdatePayload(input))
@@ -81,28 +85,33 @@ export function useBooks() {
 
     if (error) {
       reportError("本の更新に失敗しました。", error);
-      return;
+      return false;
     }
 
     const updatedBook = toBook(data as BookRow);
     setBooks((currentBooks) =>
-      currentBooks.map((book) => (book.id === id ? updatedBook : book))
+      currentBooks.map((book) => (book.id === id ? updatedBook : book)),
     );
+    return true;
   };
 
-  const updateBookStatus = async (id: string, status: ReadingStatus) => {
-    await updateBook(id, { status });
+  const updateBookStatus = async (
+    id: string,
+    status: ReadingStatus,
+  ): Promise<boolean> => {
+    return updateBook(id, { status });
   };
 
-  const deleteBook = async (id: string) => {
+  const deleteBook = async (id: string): Promise<boolean> => {
     const { error } = await supabase.from("books").delete().eq("id", id);
 
     if (error) {
       reportError("本の削除に失敗しました。", error);
-      return;
+      return false;
     }
 
     setBooks((currentBooks) => currentBooks.filter((book) => book.id !== id));
+    return true;
   };
 
   return {

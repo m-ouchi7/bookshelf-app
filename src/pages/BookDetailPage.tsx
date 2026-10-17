@@ -12,8 +12,8 @@ import {
 
 type BookDetailPageProps = {
   getBookById: (id: string) => Book | undefined;
-  updateBook: (id: string, input: Partial<CreateBookInput>) => Promise<void>;
-  deleteBook: (id: string) => Promise<void>;
+  updateBook: (id: string, input: Partial<CreateBookInput>) => Promise<boolean>;
+  deleteBook: (id: string) => Promise<boolean>;
 };
 
 function toFormState(book: Book): BookFormState {
@@ -50,13 +50,18 @@ function BookDetailPage({
   }
 
   const handleUpdateBook = async (input: CreateBookInput) => {
-    await updateBook(id, input);
+    const succeeded = await updateBook(id, input);
+    if (!succeeded) return false;
+
     setIsEditing(false);
+    return true;
   };
 
   const handleDelete = async () => {
     if (window.confirm("本当に削除しますか？")) {
-      await deleteBook(id);
+      const succeeded = await deleteBook(id);
+      if (!succeeded) return;
+
       navigate("/");
     }
   };
@@ -127,7 +132,7 @@ function BookDetailPage({
               <dd>
                 {book.evaluation
                   ? `${"★".repeat(book.evaluation)}${"☆".repeat(
-                      5 - book.evaluation
+                      5 - book.evaluation,
                     )}`
                   : "未評価"}
               </dd>
