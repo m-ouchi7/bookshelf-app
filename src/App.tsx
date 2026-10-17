@@ -16,6 +16,7 @@ type HomePageProps = Pick<
   | "searchQuery"
   | "setSearchQuery"
   | "isLoading"
+  | "isFetching"
   | "isError"
   | "error"
   | "retry"
@@ -29,6 +30,7 @@ function HomePage({
   searchQuery,
   setSearchQuery,
   isLoading,
+  isFetching,
   isError,
   error,
   retry,
@@ -60,12 +62,14 @@ function HomePage({
           <div className="empty-state query-error" role="alert">
             <p>本の一覧を読み込めませんでした。</p>
             {error instanceof Error && <p>{error.message}</p>}
+            {isFetching && <p role="status">再試行しています...</p>}
             <button
               className="secondary-button"
               type="button"
+              disabled={isFetching}
               onClick={() => void retry()}
             >
-              再試行
+              {isFetching ? "再試行中..." : "再試行"}
             </button>
           </div>
         ) : books.length === 0 ? (
@@ -98,6 +102,7 @@ function App() {
     getBookById,
     updateBook,
     isLoading,
+    isFetching,
     isError,
     error,
     retry,
@@ -134,6 +139,7 @@ function App() {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               isLoading={isLoading}
+              isFetching={isFetching}
               isError={isError}
               error={error}
               retry={retry}

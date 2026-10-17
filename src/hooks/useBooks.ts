@@ -163,6 +163,7 @@ export function useBooks() {
     books,
     filteredBooks,
     isLoading: booksQuery.isLoading,
+    isFetching: booksQuery.isFetching,
     isError: booksQuery.isError,
     error: booksQuery.error,
     retry: booksQuery.refetch,
