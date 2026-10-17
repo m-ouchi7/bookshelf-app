@@ -9,19 +9,29 @@ import "./App.css";
 
 type HomePageProps = Pick<
   ReturnType<typeof useBooks>,
+  | "books"
   | "filteredBooks"
   | "filterStatus"
   | "setFilterStatus"
   | "searchQuery"
   | "setSearchQuery"
+  | "isLoading"
+  | "isError"
+  | "error"
+  | "retry"
 >;
 
 function HomePage({
+  books,
   filteredBooks,
   filterStatus,
   setFilterStatus,
   searchQuery,
   setSearchQuery,
+  isLoading,
+  isError,
+  error,
+  retry,
 }: HomePageProps) {
   return (
     <main className="app-shell">
@@ -42,7 +52,30 @@ function HomePage({
       />
 
       <section className="book-list" aria-label="本の一覧">
-        {filteredBooks.length > 0 ? (
+        {isLoading ? (
+          <p className="empty-state" role="status">
+            本を読み込んでいます...
+          </p>
+        ) : isError ? (
+          <div className="empty-state query-error" role="alert">
+            <p>本の一覧を読み込めませんでした。</p>
+            {error instanceof Error && <p>{error.message}</p>}
+            <button
+              className="secondary-button"
+              type="button"
+              onClick={() => void retry()}
+            >
+              再試行
+            </button>
+          </div>
+        ) : books.length === 0 ? (
+          <div className="empty-state">
+            <p>本が登録されていません。</p>
+            <Link className="primary-button" to="/books/new">
+              本を追加
+            </Link>
+          </div>
+        ) : filteredBooks.length > 0 ? (
           filteredBooks.map((book) => <BookCard key={book.id} book={book} />)
         ) : (
           <p className="empty-state">対象の本が見つかりません。</p>
@@ -55,6 +88,7 @@ function HomePage({
 function App() {
   const {
     filteredBooks,
+    books,
     filterStatus,
     setFilterStatus,
     searchQuery,
@@ -63,20 +97,46 @@ function App() {
     deleteBook,
     getBookById,
     updateBook,
+    isLoading,
+    isError,
+    error,
+    retry,
+    notification,
+    clearNotification,
   } = useBooks();
 
   return (
     <BrowserRouter>
+      {notification && (
+        <div
+          className={`app-notification app-notification--${notification.kind}`}
+          role={notification.kind === "error" ? "alert" : "status"}
+        >
+          <span>{notification.message}</span>
+          <button
+            type="button"
+            aria-label="通知を閉じる"
+            onClick={clearNotification}
+          >
+            ×
+          </button>
+        </div>
+      )}
       <Routes>
         <Route
           path="/"
           element={
             <HomePage
+              books={books}
               filteredBooks={filteredBooks}
               filterStatus={filterStatus}
               setFilterStatus={setFilterStatus}
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
+              isLoading={isLoading}
+              isError={isError}
+              error={error}
+              retry={retry}
             />
           }
         />

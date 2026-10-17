@@ -1,18 +1,14 @@
 import { z } from "zod";
 
-export function reportError(message: string, error: unknown) {
-  console.error(message, error);
+export function formatErrorMessage(message: string, error: unknown) {
+  if (!(error instanceof z.ZodError)) return message;
 
-  if (error instanceof z.ZodError) {
-    const details = error.issues
-      .map((issue) => {
-        const field = issue.path.length > 0 ? `${issue.path.join(".")}: ` : "";
-        return `${field}${issue.message}`;
-      })
-      .join("\n");
-    alert(`${message}\n${details}`);
-    return;
-  }
+  const details = error.issues
+    .map((issue) => {
+      const field = issue.path.length > 0 ? `${issue.path.join(".")}: ` : "";
+      return `${field}${issue.message}`;
+    })
+    .join("\n");
 
-  alert(message);
+  return `${message}\n${details}`;
 }
