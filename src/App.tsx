@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Link, Route, Routes } from "react-router-dom";
 import BookCard from "./components/BookCard";
 import BookFilter from "./components/BookFilter";
@@ -109,6 +110,13 @@ function App() {
     notification,
     clearNotification,
   } = useBooks();
+
+  useEffect(() => {
+    if (!notification) return;
+
+    const timeoutId = window.setTimeout(clearNotification, 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [notification, clearNotification]);
 
   return (
     <BrowserRouter>

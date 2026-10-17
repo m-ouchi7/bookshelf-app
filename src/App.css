@@ -299,18 +299,20 @@ select:focus {
 .app-notification {
   position: fixed;
   z-index: 10;
-  top: 16px;
-  right: 16px;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  align-items: flex-start;
-  gap: 16px;
-  width: min(420px, calc(100vw - 32px));
-  padding: 14px 16px;
-  border: 1px solid #b8c9bf;
+  align-items: center;
+  gap: 12px;
+  width: fit-content;
+  max-width: calc(100vw - 32px);
+  padding: 8px 10px 8px 14px;
+  border: 1px solid #d4b19f;
   border-radius: 6px;
-  color: #243b30;
-  background: #f2f8f4;
-  box-shadow: 0 8px 24px rgba(34, 48, 39, 0.14);
+  color: #70432f;
+  background: #f4e5dc;
+  box-shadow: 0 4px 14px rgba(80, 55, 40, 0.12);
   white-space: pre-line;
 }
 
