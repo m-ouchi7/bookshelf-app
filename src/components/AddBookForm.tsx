@@ -5,7 +5,6 @@ import {
   type BookFormState,
   type CreateBookInput,
 } from "../types/book";
-import { reportError } from "../utils/errorHandler";
 
 type AddBookFormProps = {
   onAddBook: (input: CreateBookInput) => Promise<boolean>;
@@ -29,12 +28,14 @@ function AddBookForm({
   submitLabel = "本を追加",
 }: AddBookFormProps) {
   const [formState, setFormState] = useState<BookFormState>(initialValue);
+  const [formError, setFormError] = useState("");
 
   const updateField = <K extends keyof BookFormState>(
     field: K,
     value: BookFormState[K],
   ) => {
     setFormState((current) => ({ ...current, [field]: value }));
+    setFormError("");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -52,13 +53,16 @@ function AddBookForm({
       note: formState.note.trim() || undefined,
     });
     if (!parsedInput.success) {
-      reportError("本の入力内容を確認してください。", parsedInput.error);
+      setFormError(
+        parsedInput.error.issues.map((issue) => issue.message).join(" "),
+      );
       return;
     }
 
     const succeeded = await onAddBook(parsedInput.data);
     if (succeeded) {
       setFormState(initialValue);
+      setFormError("");
     }
   };
 
@@ -71,6 +75,11 @@ function AddBookForm({
           idPrefix="book"
         />
       </form>
+      {formError && (
+        <p className="inline-error" role="alert">
+          {formError}
+        </p>
+      )}
       <button type="submit" form="book-form" className="book-form__submit">
         {submitLabel}
       </button>
