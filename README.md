@@ -7,9 +7,11 @@ React と TypeScript を用いて構築した、個人向けの読書管理ア�
 
 ## 🛠 技術スタック (Tech Stack)
 
-* **フロントエンド**: React 18 / TypeScript
+* **フロントエンド**: React 19 / TypeScript
 * **ビルドツール**: Vite
-* **ランタイム環境**: Node.js v24.21.0
+* **サーバーデータ管理**: TanStack Query
+* **API / バリデーション**: Supabase / Zod
+* **ランタイム環境**: Node.js 24系（開発環境: v24.21.0）
 * **開発支援・設計パートナー (AI)**:
   * **Gemini**: 概念設計の壁打ち、課題整理、ドキュメント構成提案、コードレビュー・動作確認アドバイス
   * **GitHub Copilot Chat**: 設計仕様に基づくTypeScript/Reactコードの生成・実装指示の実行
@@ -39,14 +41,66 @@ React と TypeScript を用いて構築した、個人向けの読書管理ア�
 
 保守性・再利用性・アクセシビリティを考慮した設計を行っています。
 
-### 1. 状態（State）と派生データの一元管理
-* データと主要ロジックは Custom Hook (`src/hooks/useBooks.ts`) に集約。
-* 表示用の `filteredBooks` は独立した State にせず、`books`・`searchQuery`・`filterStatus` から**レンダリング時に動的計算（派生）**することで、State 同期の不整合（バグ）を排除。
+### 1. サーバーデータとUI状態の分離
+* 書籍データはTanStack Queryのキャッシュを信頼できる情報源として管理し、`useBooks` (`src/hooks/useBooks.ts`) に取得・追加・更新・削除の処理を集約。
+* CRUD成功時は`invalidateQueries`で書籍Queryを無効化し、最新データを再取得。
+* 検索語とステータスフィルターはUIローカル状態として保持し、Queryから得た書籍に対して`filteredBooks`を計算。
 
-### 2. コンポーネント設計（単一責任の原則）
-* **`BookCard`**: 1冊の読書カードの可視化とアクション（削除・ステータス変更）。セマンティックなマークアップ (`<article>`, `<dl>`) とアクセシビリティ（`aria-label` 等）に配慮。
-* **`BookFilter`**: キーワード検索とステータス絞り込みのコントロール。
-* **`App`**: 全体のレイアウトと Hook からのデータ流し込みのみを担うトップレベルコンポーネント。
+### 2. APIとフォーム境界の検証
+* Supabaseから取得した行は`bookRowSchema`で検証してから、`toBook`でDomainモデルの`Book`へ変換。
+* フォーム値は`createBookInputSchema`で検証し、Mutation内でも新規・更新用スキーマで再検証。
+* DB行（`BookRow`）、Domainモデル（`Book`）、フォーム状態（`BookFormState`）を分け、`src/utils/bookMapper.ts`でDB形式との変換を担当。
+
+### 3. コンポーネント設計（単一責任の原則）
+* **`BookCard`**: 1冊の読書情報をカードとして表示。タイトルから詳細画面へ移動でき、セマンティックなマークアップ (`<article>`, `<dl>`) を使用。
+* **`BookFilter`**: キーワード検索とステータス絞り込みのコントロール。React state setterではなく、値を受け取る変更コールバックを利用。
+* **`App`**: Query状態に応じた一覧表示、再試行導線、共通通知を構成。
+
+---
+
+## 🚀 セットアップ
+
+### 必要な環境
+
+* Node.js 24系
+* npm
+* Supabaseプロジェクトと`books`テーブル
+
+### インストールと起動
+
+```bash
+npm ci
+npm run dev
+```
+
+### Supabase環境変数
+
+プロジェクトルートに`.env.local`を作成し、SupabaseのProject URLと公開用anon keyを設定します。
+
+```dotenv
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+`service_role` keyなどの秘密鍵をフロントエンド用環境変数に設定しないでください。開発環境でRLSを無効にしている場合、本番環境では適切なRLSポリシーを有効にしてください。テーブルとRLSの開発メモは[Supabase setup](docs/design/supabase-setup.md)を参照してください。
+
+### 主なコマンド
+
+```bash
+npm run dev      # 開発サーバー
+npm run build    # TypeScript検査と本番ビルド
+npm run lint     # ESLint
+npm run preview  # 本番ビルドのプレビュー
+```
+
+---
+
+## 📚 設計ドキュメント
+
+* [初期アーキテクチャ設計](docs/design/01-initial-architecture-design.md)
+* [API / Domain / Formデータフロー](docs/design/02-api-domain-form-data-flow.md)
+* [エラーハンドリング設計](docs/design/03-error-handling-design.md)
+* [Supabase構築・運用メモ](docs/design/supabase-setup.md)
 
 ---
 
@@ -60,10 +114,12 @@ bookshelf-app/
 │   ├── design/                 # 設計仕様書・アーキテクチャ定義
 │   └── prompts/                # AIへの指示プロンプト履歴
 ├── src/
-│   ├── components/             # UIコンポーネント (BookCard, BookFilter)
-│   ├── hooks/                  # Custom Hook (useBooks)
-│   ├── mocks/                  # モックデータ (books)
-│   ├── types/                  # 型定義 (book.ts)
+│   ├── components/             # フォーム、一覧、入力UI
+│   ├── hooks/                  # Query / Mutationと書籍ロジック
+│   ├── lib/                    # Supabaseクライアント
+│   ├── pages/                  # 一覧、追加、詳細、編集ページ
+│   ├── types/                  # Domain型とZodスキーマ
+│   ├── utils/                  # DBマッピング、日付、エラー処理
 │   ├── App.tsx
 │   └── main.tsx
 └── README.md
