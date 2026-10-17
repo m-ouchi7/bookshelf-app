@@ -19,7 +19,6 @@ type HomePageProps = Pick<
   | "isLoading"
   | "isFetching"
   | "isError"
-  | "error"
   | "retry"
 >;
 
@@ -33,7 +32,6 @@ function HomePage({
   isLoading,
   isFetching,
   isError,
-  error,
   retry,
 }: HomePageProps) {
   const handleSearchQueryChange = (nextSearchQuery: string) => {
@@ -69,7 +67,6 @@ function HomePage({
         ) : isError ? (
           <div className="empty-state query-error" role="alert">
             <p>本の一覧を読み込めませんでした。</p>
-            {error instanceof Error && <p>{error.message}</p>}
             {isFetching && <p role="status">再試行しています...</p>}
             <button
               className="secondary-button"
@@ -112,7 +109,6 @@ function App() {
     isLoading,
     isFetching,
     isError,
-    error,
     retry,
     notification,
     clearNotification,
@@ -156,7 +152,6 @@ function App() {
               isLoading={isLoading}
               isFetching={isFetching}
               isError={isError}
-              error={error}
               retry={retry}
             />
           }
